@@ -3,7 +3,6 @@ from PPlay.gameimage import *
 from PPlay.sprite import *
 from PPlay.collision import *
 
-
 janela=Window(1333,750)
 janela.set_title("Rise of Zer'One")
 background=GameImage("cidade2_background.png")
@@ -18,6 +17,8 @@ paredeD.set_position(janela.width,0)
 #HUD
 vida=Sprite("vida4.png")
 vida.set_position(20,20)
+habilidade=Sprite("habilidade.png")
+habilidade.set_position(250,20)
 
 #Jogador
 jogador=Sprite("zuckin_idle.png",2)
@@ -40,10 +41,10 @@ pulo=False
 ult='d'
 while True:
     background.draw()
-    paredeE.draw()
     jogador.draw()
     drone.draw()
     vida.draw()
+    habilidade.draw()
 
     #Movimento Horizontal
     if teclado.key_pressed("A"):
@@ -103,7 +104,7 @@ while True:
     if teclado.key_pressed("A") or teclado.key_pressed("D"):
         if not(teclado.key_pressed("A") and teclado.key_pressed("D")):
             idle=0
-            if run==False:
+            if run==False and pulo==False:
                 if teclado.key_pressed("A"):
                     jogador=Sprite("zuckin_runE.png",4)
                 if teclado.key_pressed("D"):
@@ -129,5 +130,3 @@ while True:
     jogador.update()
     drone.update()
     janela.update()
-
-    #comentario 26/10
