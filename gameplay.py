@@ -129,3 +129,5 @@ while True:
     jogador.update()
     drone.update()
     janela.update()
+
+    #comentario 26/10
