@@ -2,7 +2,11 @@ from PPlay.window import *
 from PPlay.gameimage import *
 from PPlay.sprite import *
 from PPlay.collision import *
+from teste import teste
 
+
+
+#Tiro do Jogador
 def vet_balas(tipo):
     x=mouse.get_position()[0]
     y=mouse.get_position()[1]
@@ -88,9 +92,10 @@ paredeD.set_position(janela.width,0)
 carro1=GameImage("carro2.png")
 carro1.set_position(500, chao-60)
 
+
+
 #HUD
-vida=Sprite("vida4.png")
-vida.set_position(20,20)
+vidas=4
 habilidade=Sprite("habilidade.png")
 habilidade.set_position(250,20)
 
@@ -99,11 +104,10 @@ jogador=Sprite("zuckin_idle.png",2)
 jogador.set_total_duration(1300)
 jogador.set_position(0, chao-10)
 jogadorxspeed=400
-speed=jogadorxspeed
 jogadoryspeed=0
 
 #Armas
-bala_speed=8
+bala_speed=1200
 bala_delay=0.3
 bala_tick=bala_delay
 balas=[]
@@ -115,6 +119,11 @@ direcao_y = 0
 drone=Sprite("drone_idleE.png",6)
 drone.set_total_duration(1000)
 drone.set_position(janela.width-drone.width, 0)
+drone_speed=500
+direita=False
+laser=Sprite("laser.png")
+laser_delay=2.5
+laser_tick=laser_delay
 
 
 teclado=Window.get_keyboard()
@@ -128,10 +137,19 @@ while True:
     background.draw()
     jogador.draw()
     drone.draw()
-    vida.draw()
-    habilidade.draw()
     carro1.draw()
     chaot.draw()
+    habilidade.draw()
+    if vidas==4:
+        vida=Sprite("vida4.png")
+    elif vidas==3:
+        vida=Sprite("vida3.png")
+    elif vidas==2:
+        vida=Sprite("vida2.png")
+    elif vidas==1:
+        vida=Sprite("vida1.png")
+    vida.set_position(20,20)
+    vida.draw()
 
     #Movimento Horizontal
     if teclado.key_pressed("A"):
@@ -143,24 +161,20 @@ while True:
 
     #Pulo
     if teclado.key_pressed("W"):
-        if pulo==False:
-            jogadoryspeed=-1200
+        if not pulo:
+            jogadoryspeed=-1500
             jogador.move_y(jogadoryspeed * janela.delta_time())
             est_pulo()
-            
     
-
-
     #Gravidade e Detecção do Chão
     if jogador.y+(jogadoryspeed * janela.delta_time())<chao:
         if jogadoryspeed<=3000:
             jogadoryspeed+=30
         jogador.move_y(jogadoryspeed * janela.delta_time())
-        det_chao(chaot)
-
+    det_chao(chaot)
     det_chao(carro1)
     
-        
+
     x=jogador.x
     y=jogador.y
     #Animação Idle
@@ -173,7 +187,6 @@ while True:
         jogador.x=x
         jogador.y=y
         run=False
-
 
     #Animação Run
     if teclado.key_pressed("A") or teclado.key_pressed("D"):
@@ -193,24 +206,20 @@ while True:
     else:
         idle+=1
 
-
     #Limites Laterais
     if Collision.collided(jogador,paredeE):
         jogador.set_position(paredeE.x+paredeE.width, jogador.y)
     elif Collision.collided(jogador,paredeD):
         jogador.set_position(paredeD.x-jogador.width, jogador.y)
-    
 
     #Atirar
     bala_tick+=janela.delta_time()
     if mouse.is_button_pressed(1) and bala_tick>=bala_delay:
-        bala_tick=0
         vet_balas(0)
-    
+        bala_tick=0
     if mouse.is_button_pressed(3) and tiro_car==10:
         vet_balas(1)
         tiro_car=0
-
 
     #Atualização das Balas
     for b in balas:
@@ -220,17 +229,69 @@ while True:
         elif Collision.collided_perfect(b[0],carro1):
             balas.remove(b)
 
-        elif Collision.collided_perfect(b[0], drone):
-            balas.remove(b)
-            if tiro_car<10:
-                tiro_car+=1
+        elif Collision.collided(b[0], drone):
+            if b[0]!=laser:
+                balas.remove(b)
+                if tiro_car<10:
+                    tiro_car+=1
+        
+        elif Collision.collided(b[0], jogador):
+            if b[0]==laser:
+                balas.remove(b)
+                vidas-=1
+                
 
         b[0].draw()
-        b[0].move_x(b[1]*bala_speed)
-        b[0].move_y(b[2]*bala_speed)
+        b[0].move_x(b[1]*bala_speed*janela.delta_time())
+        b[0].move_y(b[2]*bala_speed*janela.delta_time())
 
-    
-    janela.draw_text("{}%".format(tiro_car*10), janela.width/2, 0, size=40, color=(255,0,0), font_name="Arial", bold=True, italic=False)
+
+    #Movimento Drone
+    if not direita:
+        if drone.x>=100:
+            drone.move_x(-drone_speed*janela.delta_time())
+        else:
+            x=drone.x
+            y=drone.y
+            drone=Sprite("drone_idle.png",6)
+            drone.set_total_duration(1000)
+            drone.x=x
+            drone.y=y
+            direita=True
+        laser_x=drone.x-laser.width
+
+    if direita:
+        if drone.x<=janela.width-drone.width-100:
+            drone.move_x(drone_speed*janela.delta_time())
+        else:
+            x=drone.x
+            y=drone.y
+            drone=Sprite("drone_idleE.png",6)
+            drone.set_total_duration(1000)
+            drone.x=x
+            drone.y=y
+            direita=False
+        laser_x=drone.x+drone.width
+
+    #Atirar Drone
+    laser_tick+=janela.delta_time()
+    if laser_tick>=laser_delay:
+        laser_tick=0
+
+        alvo_x=jogador.x+(jogador.width/2)
+        alvo_y=jogador.y+(jogador.height/2)
+        laser=Sprite("laser.png")
+        laser.set_position(laser_x, drone.y+(drone.height/2))
+
+        direcao_x = alvo_x-laser.x
+        direcao_y = alvo_y-laser.y
+        mag=((direcao_x**2)+(direcao_y)**2)**(1/2)
+        direcao_x/=mag
+        direcao_y/=mag
+
+        balas.append([laser,direcao_x,direcao_y])
+
+    janela.draw_text("{}%".format(tiro_car*10), janela.width/2, 0, size=50, color=(255,0,0), font_name="Comic Sans", bold=True, italic=False)
 
     jogador.update()
     drone.update()
