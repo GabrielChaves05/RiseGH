@@ -70,14 +70,18 @@ def est_pulo():
     jogador.y=y
     pulo=True
 
+def background_move(obj):
+    background_speed=150
+    obj.x -= background_speed * janela.delta_time() 
+
 #Janela
 janela=Window(1333,750)
 janela.set_title("Rise of Zer'One")
-background=GameImage("cidade1_background.png")
+background=GameImage("cidade2_background.png")
 background.set_position(0,0)
-background2=GameImage("cidade1_background.png")
+background2=GameImage("cidade2_background.png")
 background2.set_position(background.width,0)
-background_speed=150
+
 
 #Cenário
 chao=janela.height-170
@@ -89,13 +93,9 @@ paredeE=GameImage("parede.png")
 paredeE.set_position(-paredeE.width,0)
 paredeD=GameImage("parede.png")
 paredeD.set_position(janela.width,0)
-carro1=GameImage("carro2.png")
-carro1.set_position(500, chao-60)
 
 #HUD
 vidas=4
-habilidade=Sprite("habilidade.png")
-habilidade.set_position(250,20)
 
 #Jogador
 jogador=Sprite("zuckin_idle.png",2)
@@ -112,6 +112,12 @@ balas=[]
 tiro_car=0
 direcao_x = 0
 direcao_y = 0
+
+#Poderes
+bateria=Sprite("bateria.png")
+bateria.set_position(janela.width-200, chao-60)
+ruby=Sprite("ruby.png")
+ruby.set_position(500, chao-60)
 
 #Inimigos:
 #Drone
@@ -140,24 +146,26 @@ pulo=False
 ult='d'
 while True:
     #Background Move
-    background.x -= background_speed * janela.delta_time() 
-    background2.x -= background_speed * janela.delta_time()
-
+    if teclado.key_pressed("E"):
+        background_move(background)
+        background_move(background2)
     if background2.x<=0:
         background.x=background2.x+background.width
     if background.x<=0:
         background2.x=background.x+background.width
-        
-
     background.draw()
     background2.draw()
 
     jogador.draw()
     drone.draw()
     sargento.draw()
-    carro1.draw()
     chaot.draw()
-    habilidade.draw()
+
+    if ruby!=0:
+        ruby.draw()
+        if Collision.collided(jogador,ruby):
+            ruby=0
+
     #Barra de Vida
     if vidas==4:
         vida=Sprite("vida4.png")
@@ -167,8 +175,16 @@ while True:
         vida=Sprite("vida2.png")
     elif vidas==1:
         vida=Sprite("vida1.png")
-    vida.set_position(20,20)
+    vida.set_position(50,20)
     vida.draw()
+
+    #Tiro Carregado
+    if tiro_car==10:
+        habilidade=Sprite("habilidade_car.png")
+    else:
+        habilidade=Sprite("habilidade.png")
+    habilidade.set_position(250,20)
+    habilidade.draw()
 
     #Movimento Horizontal
     if teclado.key_pressed("A"):
@@ -191,7 +207,6 @@ while True:
             jogadoryspeed+=30
         jogador.move_y(jogadoryspeed * janela.delta_time())
     det_chao(chaot)
-    det_chao(carro1)
     
 
     x=jogador.x
@@ -243,9 +258,6 @@ while True:
     #Atualização das Balas
     for b in balas:
         if (b[0].x + b[0].width <= 0) or (b[0].x >= janela.width) or (b[0].y <= 0) or (b[0].y + b[0].height >= janela.height):
-            balas.remove(b)
-
-        elif Collision.collided_perfect(b[0],carro1):
             balas.remove(b)
 
         elif Collision.collided(b[0], drone):
@@ -316,7 +328,7 @@ while True:
 
 
 
-    janela.draw_text("{}%".format(tiro_car*10), janela.width/2, 0, size=50, color=(255,0,0), font_name="Comic Sans", bold=True, italic=False)
+    janela.draw_text("{}%".format(tiro_car*10), habilidade.x+18 , 33, size=35, color=(255,0,0), font_name="Comic Sans", bold=True, italic=False)
 
     jogador.update()
     drone.update()
