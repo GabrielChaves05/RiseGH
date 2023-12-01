@@ -7,7 +7,26 @@ from teste import *
 
 
 #Tiro do Jogador
+def vet_balas(tipo):
+    x=mouse.get_position()[0]
+    y=mouse.get_position()[1]
+    if ult=='d':
+        x_bala=jogador.x+jogador.width-20
+    elif ult=='a':
+        x_bala=jogador.x
 
+    if tipo==0:
+        bala=Sprite("zero.png")
+    elif tipo==1:
+        bala=Sprite("um.png")
+    bala.set_position(x_bala, jogador.y+(jogador.height/2)-20)
+    
+    direcao_x = x-bala.x
+    direcao_y = y-bala.y
+    mag=((direcao_x**2)+(direcao_y)**2)**(1/2)
+    direcao_x/=mag
+    direcao_y/=mag
+    balas.append([bala,direcao_x,direcao_y])
 
 def col_chao(altura):
     global jogador
@@ -56,62 +75,11 @@ def est_pulo():
     pulo=True
 
 
-janela=Window(1333,750)
-janela.set_title("Rise of Zer'One")
-background=GameImage("cidade2_background.png")
-
-#Cenário
-chao=janela.height-170
-
-chaot=GameImage("chao.png")
-chaot.set_position(0, chao+20+chaot.height)
-
-paredeE=GameImage("parede.png")
-paredeE.set_position(-paredeE.width,0)
-paredeD=GameImage("parede.png")
-paredeD.set_position(janela.width,0)
-carro1=GameImage("carro2.png")
-carro1.set_position(500, chao-60)
-
-#HUD
-vidas=4
-habilidade=Sprite("habilidade.png")
-habilidade.set_position(250,20)
-
-#Jogador
-jogador=Sprite("zuckin_idle.png",2)
-jogador.set_total_duration(1300)
-jogador.set_position(0, chao-10)
-jogadorxspeed=400
-jogadoryspeed=0
-
-#Armas
-bala_speed=1200
-bala_delay=0.3
-bala_tick=bala_delay
-balas=[]
-tiro_car=0
-direcao_x = 0
-direcao_y = 0
-
-#Inimigos
-drone=Sprite("drone_idleE.png",6)
-drone.set_total_duration(1000)
-drone.set_position(janela.width-drone.width, 0)
-drone_speed=500
-direita=False
-laser=Sprite("laser.png")
-laser_delay=2.5
-laser_tick=laser_delay
 
 
-teclado=Window.get_keyboard()
-mouse=Window.get_mouse()
+variaveis()
 
-run=False
-idle=0
-pulo=False
-ult='d'
+
 while True:
     background.draw()
     jogador.draw()
@@ -194,10 +162,10 @@ while True:
     #Atirar
     bala_tick+=janela.delta_time()
     if mouse.is_button_pressed(1) and bala_tick>=bala_delay:
-        vet_balas(0, ult, jogador, balas)
+        vet_balas(0)
         bala_tick=0
     if mouse.is_button_pressed(3) and tiro_car==10:
-        vet_balas(1, ult, jogador, balas)
+        vet_balas(1)
         tiro_car=0
 
     #Atualização das Balas
